@@ -1,40 +1,31 @@
 #!/bin/bash
 
-set -e
+echo "=== Updating system ==="
+sudo yum update -y
 
-echo "🔹 Updating system..."
-sudo apt update -y
-sudo apt upgrade -y
+echo "=== Installing Java 17 (Amazon Corretto) ==="
+sudo yum install -y java-17-amazon-corretto
 
-echo "🔹 Installing Java (OpenJDK 17)..."
-sudo apt install -y openjdk-17-jdk
-
-echo "🔹 Verifying Java installation..."
+echo "=== Verifying Java ==="
 java -version
 
-echo "🔹 Adding Jenkins repository key..."
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee \
-  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+echo "=== Adding Jenkins repository ==="
+sudo wget -O /etc/yum.repos.d/jenkins.repo \
+https://pkg.jenkins.io/redhat-stable/jenkins.repo
 
-echo "🔹 Adding Jenkins repository..."
-echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
-  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
-  /etc/apt/sources.list.d/jenkins.list > /dev/null
+echo "=== Importing Jenkins GPG key ==="
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
 
-echo "🔹 Updating package list..."
-sudo apt update -y
+echo "=== Installing Jenkins ==="
+sudo yum install -y jenkins
 
-echo "🔹 Installing Jenkins..."
-sudo apt install -y jenkins
-
-echo "🔹 Starting Jenkins service..."
-sudo systemctl start jenkins
+echo "=== Starting Jenkins service ==="
+sudo systemctl daemon-reload
 sudo systemctl enable jenkins
+sudo systemctl start jenkins
 
-echo "🔹 Checking Jenkins status..."
+echo "=== Jenkins Status ==="
 sudo systemctl status jenkins --no-pager
 
-echo "✅ Jenkins installed successfully!"
-echo "🌐 Access Jenkins at: http://<your-server-ip>:8080"
-echo "🔐 Initial admin password:"
-sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+echo "=== Jenkins Installed Successfully ==="
+echo "Access Jenkins at: http://<EC2-PUBLIC-IP>:8080"
